@@ -204,7 +204,7 @@ def _annotate_rna_plot(ax, cg, coords, annotations, text_kwargs):
         else:
             log.info("Cannot annotate %s as '%s' , because of insufficient space.", mloop, annot_dict[mloop])
 
-def plot_rna(cg, ax=None, offset=(0, 0), text_kwargs={}, backbone_kwargs={},
+def plot_rna(cg, color_ind=None, ax=None, offset=(0, 0), text_kwargs={}, backbone_kwargs={},
              basepair_kwargs={}, color=True, lighten=0, annotations={}):
     '''
     Plot an RNA structure given a set of nucleotide coordinates
@@ -213,7 +213,8 @@ def plot_rna(cg, ax=None, offset=(0, 0), text_kwargs={}, backbone_kwargs={},
 
         This function calls set_axis_off on the axis. You can revert this by
         using ax.set_axis_on() if you like to see the axis.
-
+    
+    :param color_ind: A list of rgb values. Optional color pattern for each base. 
     :param cg: A forgi.threedee.model.coarse_grain.CoarseGrainRNA structure
     :param ax: A matplotlib plotting area
     :param offset: Offset the plot by these coordinates. If a simple True is passed in, then
@@ -297,15 +298,18 @@ def plot_rna(cg, ax=None, offset=(0, 0), text_kwargs={}, backbone_kwargs={},
     # Now plot circles
     for i, coord in enumerate(coords):
         if color:
-            c = el_to_color[el_string[i]]
-            h,l,s = colorsys.rgb_to_hls(*mc.to_rgb(c))
-            if lighten>0:
-                l += (1-l)*min(1,lighten)
+            if color_ind is not None:
+                c = color_ind[i]
             else:
-                l +=l*max(-1, lighten)
-            if l>1 or l<0:
-                print(l)
-            c=colorsys.hls_to_rgb(h,l,s)
+                c = el_to_color[el_string[i]]
+                h,l,s = colorsys.rgb_to_hls(*mc.to_rgb(c))
+                if lighten>0:
+                    l += (1-l)*min(1,lighten)
+                else:
+                    l +=l*max(-1, lighten)
+                if l>1 or l<0:
+                    c=colorsys.hls_to_rgb(h,l,s)
+                    
             circle = plt.Circle((coord[0], coord[1]),
                             color=c)
         else:
@@ -326,7 +330,7 @@ def plot_rna(cg, ax=None, offset=(0, 0), text_kwargs={}, backbone_kwargs={},
         annot_pos = _find_annot_pos_on_circle(nt, all_coords, cg)
         if annot_pos is not None:
             ax.annotate(str(nt), xy=coords[nt-1], xytext=annot_pos,
-                        arrowprops={"width":1, "headwidth":1, "color":"gray"},
+                        #arrowprops={"width":.1, "headwidth":.1, "color":"gray"},
                         ha="center", va="center", zorder=0, **ntnum_kwargs)
             all_coords.append(annot_pos)
 
